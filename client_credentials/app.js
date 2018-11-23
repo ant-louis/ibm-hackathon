@@ -37,7 +37,7 @@ request.post(authOptions, function(error, response, body) {
     // use the access token to access the Spotify Web API
     var token = body.access_token;
     var options = {
-      url: 'https://api.spotify.com/v1/search?q=album:gold%20artist:abba&type=album',
+      url: 'https://api.spotify.com/v1/artists/0LcJLqbBmaGUft1e9Mm8HV',
       headers: {
         'Authorization': 'Bearer ' + token
       },
@@ -45,6 +45,10 @@ request.post(authOptions, function(error, response, body) {
     };
     request.get(options, function(error, response, body) {
       console.log(body);
+      // items = body.albums.items;
+      // for (let i = 0; i < items.length; i++) {
+        //   console.log(items[i]);
+      }
     });
   }
 });
