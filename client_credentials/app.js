@@ -45,16 +45,19 @@ let accessSpotifyAPI = url => {
       return rp(options)
 }
 
-
-// let getSongs = track_links => {
-//   return new Promise((resolve, reject) => {
-//     songs = []
-    
-//     for(let i = 0; i < track_links.length ; i++){
-//       body = accessSpotifyAPI(track_links[0])
-//       songs.push(body.items)
-
-//     }
+//Return all songs from the track_links list
+//LAST MODIFICATION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+let getSongs = track_links => {
+  promises = []
+  
+  for(let i = 0; i < track_links.length ; i++){
+    promises.push(
+      accessSpotifyAPI(track_links[i])
+      .then(body => {return body.items})
+    )
+  }
+  return Promise.all(promises) 
+}
 
 
 //   })
@@ -104,7 +107,7 @@ let getTrackLinks = body => {
 }
   
   
-  //Request authorization from Spotify
+//Request authorization from Spotify
 rp(authOptions)
 .then(body => {
     // use the access token to access the Spotify Web API
@@ -114,10 +117,11 @@ rp(authOptions)
 })
 .then(body => {
   return getTrackLinks(body)
-// })
-// .then(track_links => {
-//   return getSongs(track_links)
 })
+.then(track_links => {
+  return getSongs(track_links)
+})
+.then(songs => {console.log(songs)})
 .catch(error => console.log(error))
 
 
