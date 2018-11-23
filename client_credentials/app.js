@@ -31,46 +31,50 @@ var authOptions = {
   json: true
 };
 
+
 request.post(authOptions, function(error, response, body) {
   if (!error && response.statusCode === 200) {
 
     // Use the access token to access the Spotify Web API
     var token = body.access_token;
     var options = {
-      url: 'https://api.spotify.com/v1/playlists/37i9dQZF1DWZxM58TRkuqg/tracks',
+      url: 'https://api.spotify.com/v1/search?q=Spotify&type=playlist&offset=0&limit=50',
       headers: {
         'Authorization': 'Bearer ' + token
       },
       json: true
     };
 
+    var next;
+    var tracks = [];
+    var track_links = []
+    var track_features = [];
+    var maxtracks = 10000;
+    var nbtracks_curr = 0;
+    //while(nbtrack_curr < maxtracks)
+
     request.get(options, function(error, response, body) {
-      console.log(body);
-      //console.log(body.items[2].track);
-
-      var song_ids = [];
-      var song_names = [];
-      var song_popularity = [];
-      var song_artists = [];
-
-      for(let i=0; i < body.items.length; i++){
-        song_ids[i] = body.items[i].track.id;
-        song_names[i] = body.items[i].track.name;
-        song_popularity[i] = body.items[i].track.popularity;
-        song_artists[i] = body.items[i].track.artists[0].name;
+        playlists = body.playlists.items;
+        nextPlaylists = body.playlists.next; //Limit of 50
+        // Iterate over all playlists (limit 50)
+      for (let i = 0; i < playlists.length; i++) {
         
+        owner = playlists[i].owner.display_name;
+        //Only take Spotify playlists
+        if(owner == "Spotify"){ 
+          track_links.push(playlists[i].tracks.href);
+          nbtracks = playlists[i].tracks.total;
+          nbtracks_curr += nbtracks;
+        }
+
+        request.get(options, function(error, response, body) {
+        
+        });
+
       }
-    });
+      console.log(track_links)
+      console.log(nbtracks_curr);
+    })
   }
 });
 
-
-
-// Get the new releases of Belgium
-//https://api.spotify.com/v1/browse/new-releases?country=BE&limit=50
-
-//Get the new releases of Belgium
-//https://api.spotify.com/v1/browse/new-releases?country=NL&limit=50
-
-//Get the new releases of Belgium
-//https://api.spotify.com/v1/browse/new-releases?country=FR&limit=50
