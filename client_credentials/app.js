@@ -23,7 +23,7 @@ request.post(authOptions, function(error, response, body) {
     // use the access token to access the Spotify Web API
     var token = body.access_token;
     var options = {
-      url: 'https://api.spotify.com/v1/search?q=album:gold%20artist:abba&type=album',
+      url: 'https://api.spotify.com/v1/search?q=Spotify&type=playlist',
       headers: {
         'Authorization': 'Bearer ' + token
       },
