@@ -18,8 +18,8 @@ var rp = require('request-promise'); // "Request" library
 
 var client_id = 'd171b87bddde4f62b14525463e1bb3f1'; // Your client id
 var client_secret = '956fbe6cddef4cfa80bfcd2d0f879712'; // Your secret
-
-// your application requests authorization
+var accessToken;
+// Application requests authorization
 var authOptions = {
   method: 'POST',
   url: 'https://accounts.spotify.com/api/token',
@@ -29,13 +29,55 @@ var authOptions = {
   form: {
     grant_type: 'client_credentials'
   },
-  json: true,
-  resolveWithFullResponse: true
+  json: true
 };
 
 
-let getTrackLinks = function(body) {
-  return new Promise(function(resolve, reject){
+let accessSpotifyAPI = url => {
+      var options = {
+        method: 'GET',
+        url: url,
+        headers: {
+          'Authorization': 'Bearer ' + accessToken
+        },
+        json: true
+      };
+      return rp(options)
+}
+
+
+// let getSongs = track_links => {
+//   return new Promise((resolve, reject) => {
+//     songs = []
+    
+//     for(let i = 0; i < track_links.length ; i++){
+//       body = accessSpotifyAPI(track_links[0])
+//       songs.push(body.items)
+
+//     }
+
+
+//   })
+// }
+
+// let getSongInformation = track_links => {
+//   return new Promise((resolve, reject) => {
+//     var song_ids = [];
+//     var song_names = [];
+//     var song_popularity = [];
+//     var song_artists = [];
+
+//     tracks = track_links[0]
+//       song_ids[i] = tracks[i].track.id;
+//       song_names[i] = tracks[i].track.name;
+//       song_popularity[i] = tracks[i].track.popularity;
+//       song_artists[i] = tracks[i].track.artists[0].name;
+//     }
+//   })
+// }
+
+let getTrackLinks = body => {
+  return new Promise((resolve, reject) => {
     var tracks = [];
     var track_links = []
     var track_features = [];
@@ -63,35 +105,36 @@ let getTrackLinks = function(body) {
   
   
   //Request authorization from Spotify
-  rp(authOptions)
-  .then(response => {
-  console.log(response.statusCode)
-  if (response.statusCode === 200) {
-    return response.body
-  }
-}).then(body => {
+rp(authOptions)
+.then(body => {
     // use the access token to access the Spotify Web API
-    var token = body.access_token;
-    var options = {
-      method: 'GET',
-      url: 'https://api.spotify.com/v1/search?q=Spotify&type=playlist&offset=0&limit=50',
-      headers: {
-        'Authorization': 'Bearer ' + token
-      },
-      json: true,
-      resolveWithFullResponse: true
-    };
-    //Access Spotify Web API
-    return rp(options)
-})
-.then(response => {
-  console.log(response.statusCode)
-  if (response.statusCode === 200) {
-    return response.body
-  }
+    accessToken = body.access_token;
+    url = 'https://api.spotify.com/v1/search?q=Spotify&type=playlist&offset=0&limit=50';
+    return accessSpotifyAPI(url)
 })
 .then(body => {
   return getTrackLinks(body)
+// })
+// .then(track_links => {
+//   return getSongs(track_links)
 })
-.then(track_links => {console.log(track_links)})
 .catch(error => console.log(error))
+
+
+
+
+
+
+//         https://api.spotify.com/v1/playlists/37i9dQZF1DWZxM58TRkuqg/tracks
+
+
+
+
+// Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=BE&limit=50
+
+//Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=NL&limit=50
+
+//Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=FR&limit=50
