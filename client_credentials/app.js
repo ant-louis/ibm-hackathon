@@ -41,8 +41,10 @@ function getTrack(body){
   var track_features = [];
   var maxtracks = 10000;
   var nbtracks_curr = 0;
+
   playlists = body.playlists.items;
   nextPlaylists = body.playlists.next; //Limit of 50
+
   // Iterate over all playlists (limit 50)
   for (let i = 0; i < playlists.length; i++) {
     
@@ -56,7 +58,10 @@ function getTrack(body){
   }
   console.log(nbtracks_curr);
   console.log(track_links)
+
+  return track_links;
 }
+
 rp(authOptions)
 .then(response => {
   console.log(response.statusCode)
@@ -88,3 +93,31 @@ rp(authOptions)
   return getTrack(body)
 })
 .catch(error => console.log(error))
+
+
+
+// var song_ids = [];
+//       var song_names = [];
+//       var song_popularity = [];
+//       var song_artists = [];
+
+//       for(let i=0; i < body.items.length; i++){
+//         song_ids[i] = body.items[i].track.id;
+//         song_names[i] = body.items[i].track.name;
+//         song_popularity[i] = body.items[i].track.popularity;
+//         song_artists[i] = body.items[i].track.artists[0].name;
+
+
+//         https://api.spotify.com/v1/playlists/37i9dQZF1DWZxM58TRkuqg/tracks
+
+
+
+
+// Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=BE&limit=50
+
+//Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=NL&limit=50
+
+//Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=FR&limit=50
