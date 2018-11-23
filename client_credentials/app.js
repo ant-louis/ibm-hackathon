@@ -34,30 +34,37 @@ var authOptions = {
 };
 
 
-function getTrack(body){
-  var tracks = [];
-  var track_links = []
-  var track_features = [];
-  var maxtracks = 10000;
-  var nbtracks_curr = 0;
-  playlists = body.playlists.items;
-  nextPlaylists = body.playlists.next; //Limit of 50
-  // Iterate over all playlists (limit 50)
-  for (let i = 0; i < playlists.length; i++) {
-    
-    owner = playlists[i].owner.display_name;
-    //Only take Spotify playlists
-    if(owner == "Spotify"){ 
-      track_links.push(playlists[i].tracks.href);
-      nbtracks = playlists[i].tracks.total;
-      nbtracks_curr += nbtracks;
+let getTrackLinks = function(body) {
+  return new Promise(function(resolve, reject){
+    var tracks = [];
+    var track_links = []
+    var track_features = [];
+    var maxtracks = 10000;
+    var nbtracks_curr = 0;
+    playlists = body.playlists.items;
+    nextPlaylists = body.playlists.next; //Limit of 50
+    // Iterate over all playlists (limit 50)
+    for (let i = 0; i < playlists.length; i++) {
+      
+      owner = playlists[i].owner.display_name;
+      //Only take Spotify playlists
+      if(owner == "Spotify"){ 
+        track_links.push(playlists[i].tracks.href);
+        nbtracks = playlists[i].tracks.total;
+        nbtracks_curr += nbtracks;
+      }
     }
-  }
-  console.log(nbtracks_curr);
-  console.log(track_links)
+    console.log(nbtracks_curr);
+    console.log(track_links)
+    
+    resolve(track_links)
+  })
 }
-rp(authOptions)
-.then(response => {
+  
+  
+  //Request authorization from Spotify
+  rp(authOptions)
+  .then(response => {
   console.log(response.statusCode)
   if (response.statusCode === 200) {
     return response.body
@@ -74,6 +81,7 @@ rp(authOptions)
       json: true,
       resolveWithFullResponse: true
     };
+    //Access Spotify Web API
     return rp(options)
 })
 .then(response => {
@@ -83,6 +91,7 @@ rp(authOptions)
   }
 })
 .then(body => {
-  return getTrack(body)
+  return getTrackLinks(body)
 })
+.then(track_links => {console.log(track_links)})
 .catch(error => console.log(error))
