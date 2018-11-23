@@ -19,7 +19,7 @@ var request = require('request'); // "Request" library
 var client_id = 'd171b87bddde4f62b14525463e1bb3f1'; // Your client id
 var client_secret = '956fbe6cddef4cfa80bfcd2d0f879712'; // Your secret
 
-// your application requests authorization
+// Application requests authorization
 var authOptions = {
   url: 'https://accounts.spotify.com/api/token',
   headers: {
@@ -34,17 +34,43 @@ var authOptions = {
 request.post(authOptions, function(error, response, body) {
   if (!error && response.statusCode === 200) {
 
-    // use the access token to access the Spotify Web API
+    // Use the access token to access the Spotify Web API
     var token = body.access_token;
     var options = {
-      url: 'https://api.spotify.com/v1/search?q=Spotify&type=playlist',
+      url: 'https://api.spotify.com/v1/playlists/37i9dQZF1DWZxM58TRkuqg/tracks',
       headers: {
         'Authorization': 'Bearer ' + token
       },
       json: true
     };
+
     request.get(options, function(error, response, body) {
       console.log(body);
+      //console.log(body.items[2].track);
+
+      var song_ids = [];
+      var song_names = [];
+      var song_popularity = [];
+      var song_artists = [];
+
+      for(let i=0; i < body.items.length; i++){
+        song_ids[i] = body.items[i].track.id;
+        song_names[i] = body.items[i].track.name;
+        song_popularity[i] = body.items[i].track.popularity;
+        song_artists[i] = body.items[i].track.artists[0].name;
+        
+      }
     });
   }
 });
+
+
+
+// Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=BE&limit=50
+
+//Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=NL&limit=50
+
+//Get the new releases of Belgium
+//https://api.spotify.com/v1/browse/new-releases?country=FR&limit=50
