@@ -1,0 +1,189 @@
+
+@font-face {
+    font-family: 'bebas';
+    src: url('police/BebasNeue-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body
+{
+
+	font-family: Arial, Verdana;
+	background-color: #434343;
+
+}
+
+#main_wrapper
+{
+
+	width: 70%;
+	background-color: white;
+	margin: auto;
+	margin-bottom: 100px;
+
+}
+
+a
+{
+
+	text-decoration: none;
+
+}
+
+a:active, a:focus
+{
+
+	outline: 0;
+
+}
+
+header
+{
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 130px;
+	background-color: #434343;
+
+}
+
+h1
+{
+
+	margin: auto;
+	font-family: 'bebas';
+	color: #ede8e8;
+	font-size: 4em;
+
+}
+
+section
+{
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	padding: 75px 0 75px 0;
+	word-wrap: break-word;
+	text-align: center;
+}
+
+.empty
+{
+
+	width: 30%;
+
+}
+
+form
+{
+
+	border-radius: 10px;
+	box-shadow: 0px 2px 5px;
+	background-color: #F2F3F3;
+	padding: 30px 30px 30px 30px;
+	margin: 0px 50px 50px 50px;
+
+}
+
+.sites
+{
+	display: flex;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.box
+{
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 20px 50px 20px 50px;
+
+}
+
+label
+{
+
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+
+}
+
+.spotify_img
+{
+
+	background: url("img/spotify.png") no-repeat;
+	width: 75px;
+	height: 75px;
+
+}
+
+.youtube_img
+{
+
+	background: url("img/youtube.png") no-repeat;
+	width: 106px;
+	height: 75px;
+
+}
+
+.soundcloud_img
+{
+
+	background: url("img/soundcloud.png") no-repeat;
+	width: 161px;
+	height: 75px;
+
+}
+
+.facebook_img
+{
+
+	background: url("img/facebook.png") no-repeat;
+	width: 75px;
+	height: 75px;
+
+}
+
+table
+{
+
+	width: 60%;
+	border-collapse: collapse;
+
+}
+
+th, td
+{
+
+	padding-bottom: 10px;
+
+}
+
+.button
+{
+
+	color: #ede8e8;
+	background-color: #25AE72;
+	border-radius: 5px;
+	font-size: 1.2em;
+	padding: 7px 20px 7px 20px;
+	margin-top: 30px;
+	-webkit-transition: background-color 0.2s;
+	transition: background-color 0.2s;
+	width: auto;
+
+}
+
+.button:hover
+{
+
+	background-color: #209763;
+
+}
