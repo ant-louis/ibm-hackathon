@@ -18,7 +18,8 @@ var rp = require('request-promise'); // "Request" library
 var json2csv = require('json2csv');
 var fs = require('fs');
 
-var songsWithFeatures;
+var trainingSongInfo_global;
+var testingSongInfo_global;
 var client_id = 'd171b87bddde4f62b14525463e1bb3f1'; // Your client id
 var client_secret = '956fbe6cddef4cfa80bfcd2d0f879712'; // Your secret
 
@@ -49,8 +50,8 @@ let accessSpotifyAPI = url => {
       return rp(options)
 }
 
-//Return all songs from the track_links list
-let getSongs = track_links => {
+//Return all songs from the track_links list containing URLs
+let getSongsFromURL = track_links => {
   promises = []
   for(let i = 0; i < track_links.length ; i++){
     promises.push(
@@ -61,17 +62,31 @@ let getSongs = track_links => {
   }
   return Promise.all(promises)
 }
-
-
-let getSongInformation = async songs => {
+//Return all songs from album IDs
+let getSongsFromAlbumID = album_ids => {
   promises = []
+  for(let i = 0; i < album_ids.length ; i++){
+    promises.push(
+      new Promise( resolve => {
+        url = "https://api.spotify.com/v1/albums/" + album_ids[i] + "/tracks"
+        accessSpotifyAPI(url)
+        .then(body => {resolve(body.items)})
+    }))
+  }
+  return Promise.all(promises)
+}
+
+//Get song information like name, artist and popularity
+let getSongInformationFromTrack = async songs => {
   for(let i = 0; i < songs.length ; i++){
     for(let k = 0; k < songs[i].length ; k++){
+      console.log(songs[i][k])
+      if(songs[i][k] == null){continue}
       promises.push(
         new Promise( resolve => {
           resolve(    
             songinfo = {
-              id: songs[i][k].track.id ,
+              id: songs[i][k].track.id,
               name: songs[i][k].track.name,
               artist: songs[i][k].track.artists[0].name,
               popularity: songs[i][k].track.popularity
@@ -80,48 +95,55 @@ let getSongInformation = async songs => {
       )
     }
   }
-  return await Promise.all(promises) 
+  return await Promise.all(promises) //Returns a list of song Objects 
 }
 
-// let getSongFeatures = songInfoList => {
-//   promises = []
-//   // console.log(songInfoList[0])
-//   url = "https://api.spotify.com/v1/audio-features?ids=52AWJPKuELTY9TjwHzXuhl" //+ songInfoList[0].id
-//   console.log(url)
-//   return accessSpotifyAPI(url).then(body => {
-//     console.log(body)
-//     return body
-//   })
-  // for(let i = 0; i < songInfoList.length ; i = i + 100){
-  //   promises.push(
-  //     new Promise(resolve => {
-  //       url = "https://api.spotify.com/v1/audio-features?ids" + songInfoList[i].id
-  //       // Create url with 100 IDs
-  //       for(let k = i + 1; k < i + 100 && k < songInfoList.length; k++) {
-  //         console.log(k)
-  //         // url = url + "%2C" + songInfoList[k].id
-  //       }
-  //       accessSpotifyAPI(url)
-  //       .then(body => {
-  //         // console.log(body)
-  //         resolve()
-  //       })
-  //     })
-  //   )
-  // }
-  // return Promise.all(promises) 
-// }
+let getSongInformation = async songs => {
+  for(let i = 0; i < songs.length ; i++){
+    for(let k = 0; k < songs[i].length ; k++){
+      if(songs[i][k] == null){continue}
+      promises.push(
+        new Promise( resolve => {
+          resolve(    
+            songinfo = {
+              id: songs[i][k].id,
+              name: songs[i][k].name,
+              artist: songs[i][k].artists[0].name,
+              popularity: songs[i][k].popularity
+          })
+        })
+      )
+    }
+  }
+  return await Promise.all(promises) //Returns a list of song Objects 
+}
 
+let getTrackIDFromAlbum = async songs => {
+  promises = []
+  for(let i = 0; i < songs.length ; i++){
+    for(let k = 0; k < songs[i].length ; k++){
+      promises.push(
+        new Promise( resolve => {
+          resolve(songs[i][k].id)
+        })
+      )
+    }
+  }
+  return await Promise.all(promises) //Returns a list of song Objects 
+}
+
+
+//Get all the playlist links from the body of the response
 let getLinks = body => {
   return new Promise((resolve, reject) => {
     var tracks = [];
-    var track_links = []
+    var playlist_links = []
     var track_features = [];
     var maxtracks = 10000;
     var nbtracks_curr = 0;
 
     playlists = body.playlists.items;
-    nextPlaylists = body.playlists.next; //Limit of 50
+    nextPlaylists = body.playlists.next; //Limit of 50, not currently used
 
     // Iterate over all playlists (limit 50)
     for (let i = 0; i < playlists.length; i++) {
@@ -129,17 +151,18 @@ let getLinks = body => {
       owner = playlists[i].owner.display_name;
       //Only take Spotify playlists
       if(owner == "Spotify"){ 
-        track_links.push(playlists[i].tracks.href);
+        playlist_links.push(playlists[i].tracks.href);
         nbtracks = playlists[i].tracks.total;
         nbtracks_curr += nbtracks;
       }
     }
-    console.log(nbtracks_curr);    
-    resolve(track_links)
+    console.log("Number of songs:", nbtracks_curr);    
+    resolve(playlist_links)
   })
 }
 
-let test = async songInfoList =>  {
+//Get song features from their IDs
+let getSongFeaturesFromID = async songInfoList =>  {
   promises = []
   for (let i = 0; i < songInfoList.length ; i = i + 100){
     promises.push(
@@ -158,156 +181,182 @@ let test = async songInfoList =>  {
   return await Promise.all(promises) 
 }
   
+
+/****************************************************************************************
+
+Extract 50 playlists from Spotify as owner and extract the song features and information
+to be used as a training sample
+
+********************************************************************************************/
+
+let getTrainingSample = (myUrl) => {
   
-//Request authorization from Spotify
-rp(authOptions)
-.then(body => {
+  //Request authorization from Spotify
+  rp(authOptions)
+  .then(body => {
     // use the access token to access the Spotify Web API
     accessToken = body.access_token;
-    url = 'https://api.spotify.com/v1/search?q=Spotify&type=playlist&offset=0&limit=50';
+    //Extract 50 Spotify playlists
+    url = myUrl;
     return accessSpotifyAPI(url)
-})
-.then(body => {
-  return getLinks(body)
-})
-.then(track_links => {
-  return getSongs(track_links)
-})
-.then(songs => {
-  return getSongInformation(songs)
-})
-.then(songInfoList => {
-  console.log(songInfoList.length)
-  songsWithFeatures = songInfoList;
-  promises = []
-  //Fetch 100 track features with one call
-
-  // async function printFiles () {
-  //   const files = await getFilePaths()
-  
-  //   for await (const file of fs.readFile(file, 'utf8')) {
-  //     console.log(contents)
-  //   }
-  // }
-
-  // async function printFiles () {
-  //   const files = await getFilePaths();
-  
-  //   await Promise.all(files.map(async (file) => {
-  //     const contents = await fs.readFile(file, 'utf8')
-  //     console.log(contents)
-  //   }));
-  // }
-
-  // for (let i = 0; i < songInfoList.length ; i = i + 100){
-  //   promises.push(
-  //     new Promise(resolve => {
-  //       url = "https://api.spotify.com/v1/audio-features?ids=" + songInfoList[i].id
-
-  //       // Create url with 100 IDs
-  //       for(let k = i + 1; k < i + 100 && k < songInfoList.length; k++) {
-  //         url = url + "%2C" + songInfoList[k].id
-  //       }
-  //       accessSpotifyAPI(url)
-  //       .then(body => {resolve(body)})
-  //     })
-  //   )
-  // }
-  // return await Promise.all(promises) 
-  return test(songInfoList)
-})
-.then(songFeaturesList => {
-
-
-  featuresArray = []
-  // console.log(songFeaturesList[3]["audio_features"][5].danceability)
-  // console.log(songFeaturesList[9]["audio_features"][65].danceability)
-  // console.log(songFeaturesList[17]["audio_features"][5].danceability)
-  // console.log(songFeaturesList[6]["audio_features"][82].danceability)
-  // console.log(songFeaturesList[1]["audio_features"][5].danceability)
-  // console.log(songFeaturesList[0]["audio_features"][0].danceability)
-  
-  //Extract every features object 
-  // console.log(songFeaturesList[8])
-  nbIter = 0
-  toDrop = []
-  for (let i = 0; i < songFeaturesList.length; i++) {
-    if(songFeaturesList[i] != null){
-      Object.keys(songFeaturesList[i]).forEach(key => {
-        // console.log(songFeaturesList[i][key].length)
-
-        for(let k = 0; k < songFeaturesList[i][key].length; k++) {
-          nbIter++
-          //Delete unnecessary features
-          if(songFeaturesList[i][key][k] == null) {
-            toDrop.push(nbIter)
-            continue
-          }
-          // console.log(songFeaturesList[7][key][40])
-          delete songFeaturesList[i][key][k].type
-          delete songFeaturesList[i][key][k].id
-          delete songFeaturesList[i][key][k].uri
-          delete songFeaturesList[i][key][k].track_href
-          delete songFeaturesList[i][key][k].analysis_url
-          featuresArray.push(songFeaturesList[i][key][k])
-        } //end for 
-      }) //end for each
+  })
+  .then(body => {
+    return getLinks(body)
+  })
+  .then(playlist_links => {
+    return getSongsFromURL(playlist_links)
+  })
+  .then(songs => {
+    return getSongInformationFromTrack(songs)
+  })
+  .then(songInfoList => {
+    //Store in global variable
+    trainingSongInfo_global = songInfoList;
+    return getSongFeaturesFromID(songInfoList)
+  })
+  .then(songFeaturesList => {
+    
+    featuresArray = []
+    nbIter = 0
+    toDrop = []
+    
+    //Extract every features object 
+    for (let i = 0; i < songFeaturesList.length; i++) {
+      if(songFeaturesList[i] != null){
+        //Iterate over the keys of each object
+        Object.keys(songFeaturesList[i]).forEach(key => {
+          for(let k = 0; k < songFeaturesList[i][key].length; k++) {
+            nbIter++
+            //Check if not null and remember index to drop
+            if(songFeaturesList[i][key][k] == null) {
+              toDrop.push(nbIter)
+              continue
+            }
+            //Delete unnecessary features
+            delete songFeaturesList[i][key][k].type
+            delete songFeaturesList[i][key][k].id
+            delete songFeaturesList[i][key][k].uri
+            delete songFeaturesList[i][key][k].track_href
+            delete songFeaturesList[i][key][k].analysis_url
+            featuresArray.push(songFeaturesList[i][key][k])
+          } //end for 
+        }) //end for each
+      }
+    } //end for
+    
+    //Drop entries where features were not retrieved
+    for(index in toDrop){
+      trainingSongInfo_global.splice(index, 1) 
     }
-  } //end for
+    
+    //Merge two name and features
+    for(let i = 0; i < trainingSongInfo_global.length; i++){
+      if(featuresArray[i] == null) {continue}
+      featuresArray[i]["name"] = trainingSongInfo_global[i]["name"]
+      featuresArray[i]["artist"] = trainingSongInfo_global[i]["artist"]
+      featuresArray[i]["popularity"] = trainingSongInfo_global[i]["popularity"]
+    }
+    //Write to JSON file
+    var json = JSON.stringify(featuresArray);
+    fs.writeFile('trainingsample.json', json, 'utf8', () => console.log("Done"));
+    
+    return featuresArray
+    
+  })
+  .catch(error => console.log(error))
+}
+      
+      
+      
+      
+/**************************************************************************************** 
 
-  //Drop entries where features were not retrieved
-  for(index in toDrop){
-    songsWithFeatures.splice(index, 1) 
-  }
+Extract New Releases from Spotify as owner and extract the song features and information
+to be used as a test sample
 
-  //Merge two name and features
-  for(let i = 0; i < songsWithFeatures.length; i++){
-    if(featuresArray[i] == null) {continue}
-    featuresArray[i]["name"] = songsWithFeatures[i]["name"]
-    featuresArray[i]["artist"] = songsWithFeatures[i]["artist"]
-    featuresArray[i]["popularity"] = songsWithFeatures[i]["popularity"]
-  }
+********************************************************************************************/
+let getNewReleases = myUrl => {
+  //Request authorization from Spotify
+  rp(authOptions)
+  .then(body => {
+    // use the access token to access the Spotify Web API
+    accessToken = body.access_token;
+    //Extract 50 Spotify playlists
+    url = myUrl
+    return accessSpotifyAPI(url)
+  })
+  .then(body => {
+    var new_albums = body.albums.items
+    var album_ids = []
+    for(let i = 0; i <  new_albums.length; i++){
+      album_ids.push(new_albums[i].id)
+    }
+    return getSongsFromAlbumID(album_ids)
+  })
+  .then(tracks_from_albums => {
+    return getSongInformation(tracks_from_albums)
+  }).then(songInformation => {
+    testingSongInfo_global = songInformation
+    return getSongFeaturesFromID(songInformation)
+  }).then(songFeaturesList => {
 
-  console.log(songsWithFeatures.length, featuresArray.length)
+    featuresArray = []
+    nbIter = 0
+    toDrop = []
+    
+    //Extract every features object 
+    for (let i = 0; i < songFeaturesList.length; i++) {
+      if(songFeaturesList[i] != null){
+        //Iterate over the keys of each object
+        Object.keys(songFeaturesList[i]).forEach(key => {
+          for(let k = 0; k < songFeaturesList[i][key].length; k++) {
+            nbIter++
+            //Check if not null and remember index to drop
+            if(songFeaturesList[i][key][k] == null) {
+              toDrop.push(nbIter)
+              continue
+            }
+            //Delete unnecessary features
+            delete songFeaturesList[i][key][k].type
+            delete songFeaturesList[i][key][k].id
+            delete songFeaturesList[i][key][k].uri
+            delete songFeaturesList[i][key][k].track_href
+            delete songFeaturesList[i][key][k].analysis_url
+            featuresArray.push(songFeaturesList[i][key][k])
+          } //end for 
+        }) //end for each
+      }
+    } //end for
+    
+    //Drop entries where features were not retrieved
+    for(index in toDrop){
+      testingSongInfo_global.splice(index, 1) 
+    }
+    //Merge name and features
+    for(let i = 0; i < testingSongInfo_global.length; i++){
+      if(featuresArray[i] == null) {continue}
 
-  var json = JSON.stringify(featuresArray);
-  fs.writeFile('trainingsample.json', json, 'utf8', () => console.log("Done"));
+      if(testingSongInfo_global[i]["name"] != undefined) {
+        featuresArray[i]["name"] = testingSongInfo_global[i]["name"]
+        featuresArray[i]["artist"] = testingSongInfo_global[i]["artist"]
+      }
+      else{ //Somehow the format is different from one track to another
+        featuresArray[i]["name"] = testingSongInfo_global[i][0]["name"]
+        featuresArray[i]["artist"] = testingSongInfo_global[i][0]["artist"]
+      }
+    }
+    
+    
+    //Write to JSON file
+    var json = JSON.stringify(featuresArray);
+    fs.writeFile('testsample2.json', json, 'utf8', () => console.log("Done"));
+  })
+  .catch(e => console.log(e))
+}
 
-  return featuresArray
-  
-}).then(featuresArray => {
-
-  myFields = ['danceability', 'energy', 'key',
-  "loudness","mode","speechiness",
-  "acousticness","instrumentalness","liveness",
-  "valence","tempo","duration_ms","time_signature"]
-
-  json2csv.parse({data: featuresArray[0], fields:myFields}, function(err, csv) {
-    if (err) console.log(err);
-    fs.writeFile('test.csv', csv, function(err) {
-      if (err) throw err;
-      console.log('file saved');
-    });
-  }); //end json2csv
-})
-// .then(songFeatures => {console.log("Done",songFeatures)})
-.catch(error => console.log(error))
+// url = 'https://api.spotify.com/v1/search?q=Spotify&type=playlist&offset=0&limit=50'
+// getTrainingSample(url) 
 
 
-
-
-
-
-//         https://api.spotify.com/v1/playlists/37i9dQZF1DWZxM58TRkuqg/tracks
-
-
-
-
-// Get the new releases of Belgium
-//https://api.spotify.com/v1/browse/new-releases?country=BE&limit=50
-
-//Get the new releases of Belgium
-//https://api.spotify.com/v1/browse/new-releases?country=NL&limit=50
-
-//Get the new releases of Belgium
-//https://api.spotify.com/v1/browse/new-releases?country=FR&limit=50
+url ="https://api.spotify.com/v1/browse/new-releases?country=BE&limit=50"
+getNewReleases(url)
