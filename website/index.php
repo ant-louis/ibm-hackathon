@@ -26,7 +26,7 @@
 						<div class = "box"><label for = "facebook"><div class = "facebook_img"></div><p>Facebook</p></label><input type = "checkbox" name = "facebook" id = "facebook" /></div>
 					</div>
 
-					<div><input type = "submit" value = "Search" class = "button" /></div>
+					<div><input type = "submit" class = "button" value = "Search" /></div>
 
 				</form>
 
@@ -34,15 +34,16 @@
 
 					<tr class = "fields">
 						<th>Artist Name</th>
-						<th>Country</th>
+						<th>Title</th>
 						<th>Potential</th>
 					</tr>
+					<?php
 
-					<tr>
-						<td>Damso</td>
-						<td>Belgium</td>
-						<td>100%</td>
-					</tr>
+						if(isset($_POST['spotify'])){
+							echo "<script src = \"list.js\"></script>";
+						}
+
+					?>
 
 				</table>
 
