@@ -15,9 +15,13 @@ limitations under the License.
 
 
 var rp = require('request-promise'); // "Request" library
+var json2csv = require('json2csv');
+var fs = require('fs');
+
 
 var client_id = 'd171b87bddde4f62b14525463e1bb3f1'; // Your client id
 var client_secret = '956fbe6cddef4cfa80bfcd2d0f879712'; // Your secret
+
 var accessToken;
 // Application requests authorization
 var authOptions = {
@@ -46,48 +50,79 @@ let accessSpotifyAPI = url => {
 }
 
 //Return all songs from the track_links list
-//LAST MODIFICATION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 let getSongs = track_links => {
   promises = []
-  
   for(let i = 0; i < track_links.length ; i++){
     promises.push(
-      accessSpotifyAPI(track_links[i])
-      .then(body => {return body.items})
-    )
+      new Promise( resolve => {
+        accessSpotifyAPI(track_links[i])
+        .then(body => {resolve(body.items)})
+    }))
   }
   return Promise.all(promises) 
 }
 
 
-//   })
-// }
+let getSongInformation = songs => {
+  promises = []
+  for(let i = 0; i < songs.length ; i++){
+    for(let k = 0; k < songs[i].length ; k++){
+      promises.push(
+        new Promise( resolve => {
+          resolve(    
+            songinfo = {
+              id: songs[i][k].track.id ,
+              name: songs[i][k].track.name,
+              artist: songs[i][k].track.artists[0].name,
+              popularity: songs[i][k].track.popularity
+          })
+        })
+      )
+    }
+  }
+  return Promise.all(promises) 
+}
 
-// let getSongInformation = track_links => {
-//   return new Promise((resolve, reject) => {
-//     var song_ids = [];
-//     var song_names = [];
-//     var song_popularity = [];
-//     var song_artists = [];
+let getSongFeatures = songInfoList => {
+  promises = []
+  // console.log(songInfoList[0])
+  url = "https://api.spotify.com/v1/audio-features?ids=52AWJPKuELTY9TjwHzXuhl" //+ songInfoList[0].id
+  console.log(url)
+  return accessSpotifyAPI(url).then(body => {
+    console.log(body)
+    return body
+  })
+  // for(let i = 0; i < songInfoList.length ; i = i + 100){
+  //   promises.push(
+  //     new Promise(resolve => {
+  //       url = "https://api.spotify.com/v1/audio-features?ids" + songInfoList[i].id
+  //       // Create url with 100 IDs
+  //       for(let k = i + 1; k < i + 100 && k < songInfoList.length; k++) {
+  //         console.log(k)
+  //         // url = url + "%2C" + songInfoList[k].id
+  //       }
+  //       accessSpotifyAPI(url)
+  //       .then(body => {
+  //         // console.log(body)
+  //         resolve()
+  //       })
+  //     })
+  //   )
+  // }
+  // return Promise.all(promises) 
+}
 
-//     tracks = track_links[0]
-//       song_ids[i] = tracks[i].track.id;
-//       song_names[i] = tracks[i].track.name;
-//       song_popularity[i] = tracks[i].track.popularity;
-//       song_artists[i] = tracks[i].track.artists[0].name;
-//     }
-//   })
-// }
-
-let getTrackLinks = body => {
+let getLinks = body => {
   return new Promise((resolve, reject) => {
     var tracks = [];
     var track_links = []
     var track_features = [];
     var maxtracks = 10000;
     var nbtracks_curr = 0;
+
     playlists = body.playlists.items;
     nextPlaylists = body.playlists.next; //Limit of 50
+
     // Iterate over all playlists (limit 50)
     for (let i = 0; i < playlists.length; i++) {
       
@@ -99,9 +134,7 @@ let getTrackLinks = body => {
         nbtracks_curr += nbtracks;
       }
     }
-    console.log(nbtracks_curr);
-    console.log(track_links)
-    
+    console.log(nbtracks_curr);    
     resolve(track_links)
   })
 }
@@ -116,12 +149,78 @@ rp(authOptions)
     return accessSpotifyAPI(url)
 })
 .then(body => {
-  return getTrackLinks(body)
+  return getLinks(body)
 })
 .then(track_links => {
   return getSongs(track_links)
 })
-.then(songs => {console.log(songs)})
+.then(songs => {
+  return getSongInformation(songs)
+})
+.then(songInfoList => {
+  promises = []
+  //Fetch 100 track features with one call
+  for(let i = 0; i < songInfoList.length ; i = i + 100){
+    promises.push(
+      new Promise(resolve => {
+        url = "https://api.spotify.com/v1/audio-features?ids=" + songInfoList[i].id
+
+        // Create url with 100 IDs
+        for(let k = i + 1; k < i + 100 && k < songInfoList.length; k++) {
+          url = url + "%2C" + songInfoList[k].id
+        }
+        accessSpotifyAPI(url)
+        .then(body => {resolve(body)})
+      })
+    )
+  }
+  return Promise.all(promises) 
+})
+.then(songFeaturesList => {
+
+  featuresArray = []
+  
+  //Extract every features object 
+  // console.log(songFeaturesList[8])
+  for (let i = 0; i < songFeaturesList.length; i++) {
+    if(songFeaturesList[i] != null){
+      Object.keys(songFeaturesList[i]).forEach(key => {
+        // console.log(songFeaturesList[i][key].length)
+        for(let k = 0; k < 30 /*songFeaturesList[i][key].length */; k++) {
+          //Delete unnecessary features
+          if(songFeaturesList[i][key][k] == null) { break}
+          // console.log(songFeaturesList[7][key][40])
+          console.log(i,k)
+          delete songFeaturesList[i][key][k].type
+          delete songFeaturesList[i][key][k].id
+          delete songFeaturesList[i][key][k].uri
+          delete songFeaturesList[i][key][k].track_href
+          delete songFeaturesList[i][key][k].analysis_url
+          featuresArray.push(songFeaturesList[i][key][k])
+        } //end for 
+      }) //end for each
+    }
+  } //end for
+  var json = JSON.stringify(featuresArray);
+  fs.writeFile('myjsonfile.json', json, 'utf8', () => console.log("Done"));
+
+  return featuresArray
+  
+}).then(featuresArray => {
+
+  myFields = ['danceability', 'energy', 'key',
+  "loudness","mode","speechiness",
+  "acousticness","instrumentalness","liveness",
+  "valence","tempo","duration_ms","time_signature"]
+  json2csv.parse({data: featuresArray[0], fields:myFields}, function(err, csv) {
+    if (err) console.log(err);
+    fs.writeFile('test.csv', csv, function(err) {
+      if (err) throw err;
+      console.log('file saved');
+    });
+  }); //end json2csv
+})
+// .then(songFeatures => {console.log("Done",songFeatures)})
 .catch(error => console.log(error))
 
 
