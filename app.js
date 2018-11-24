@@ -23,6 +23,9 @@ var testingSongInfo_global;
 var client_id = 'd171b87bddde4f62b14525463e1bb3f1'; // Your client id
 var client_secret = '956fbe6cddef4cfa80bfcd2d0f879712'; // Your secret
 
+var testingSample;
+var testingValues = ""
+
 var accessToken;
 // Application requests authorization
 var authOptions = {
@@ -256,9 +259,11 @@ let getTrainingSample = (myUrl) => {
       featuresArray[i]["artist"] = trainingSongInfo_global[i]["artist"]
       featuresArray[i]["popularity"] = trainingSongInfo_global[i]["popularity"]
     }
+
+    
     //Write to JSON file
-    var json = JSON.stringify(featuresArray);
-    fs.writeFile('trainingsample.json', json, 'utf8', () => console.log("Done"));
+    // var json = JSON.stringify(featuresArray);
+    // fs.writeFile('trainingsample.json', json, 'utf8', () => console.log("Done"));
     
     return featuresArray
     
@@ -336,21 +341,61 @@ let getNewReleases = myUrl => {
     for(let i = 0; i < testingSongInfo_global.length; i++){
       if(featuresArray[i] == null) {continue}
 
+
       if(testingSongInfo_global[i]["name"] != undefined) {
         featuresArray[i]["name"] = testingSongInfo_global[i]["name"]
         featuresArray[i]["artist"] = testingSongInfo_global[i]["artist"]
+        featuresArray[i]["popularity"] = null
       }
       else{ //Somehow the format is different from one track to another
         featuresArray[i]["name"] = testingSongInfo_global[i][0]["name"]
         featuresArray[i]["artist"] = testingSongInfo_global[i][0]["artist"]
+        featuresArray[i]["popularity"] = null
       }
     }
-    
-    
-    //Write to JSON file
-    var json = JSON.stringify(featuresArray);
-    fs.writeFile('testsample2.json', json, 'utf8', () => console.log("Done"));
+
+
+    keys = ["danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence", "tempo", "duration_ms", "time_signature", "name", "artist", "popularity"]
+    for (let i = 0; i < featuresArray.length; i++) {
+      testingValues += '['
+      for (let k = 0; k < keys.length; k++){
+        if(typeof featuresArray[i][keys[k]] == "string"){
+          if(keys[k] != "popularity") {
+            testingValues +=  featuresArray[i][keys[k]] + ','
+          }else{
+            testingValues +=  featuresArray[i][keys[k]]
+          }
+        }        
+        else if(typeof featuresArray[i][keys[k]] == "number"){
+          if(keys[k] != "popularity") {
+            testingValues +=  featuresArray[i][keys[k]].toString() + ','
+          }else{
+            testingValues +=  featuresArray[i][keys[k]].toString()
+          }
+        }        
+        else if(typeof featuresArray[i][keys[k]] == "object"){
+          if(keys[k] != "popularity") {
+            testingValues +=  JSON.stringify(featuresArray[i][keys[k]]) + ','
+          }else{
+            testingValues +=  JSON.stringify(featuresArray[i][keys[k]])
+          }
+        }
+      }
+
+      if(i != featuresArray.length-1) {
+        testingValues += '],'
+      }else{
+        testingValues += ']'
+      }      
+    }
+    console.log(testingValues)
+
+      
   })
+  //   //Write to JSON file
+  //   var json = JSON.stringify(featuresArray);
+  //   fs.writeFile('testsample2.json', json, 'utf8', () => console.log("Done"));
+  // })
   .catch(e => console.log(e))
 }
 
