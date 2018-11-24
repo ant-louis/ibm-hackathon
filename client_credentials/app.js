@@ -18,7 +18,7 @@ var rp = require('request-promise'); // "Request" library
 var json2csv = require('json2csv');
 var fs = require('fs');
 
-
+var songsWithFeatures;
 var client_id = 'd171b87bddde4f62b14525463e1bb3f1'; // Your client id
 var client_secret = '956fbe6cddef4cfa80bfcd2d0f879712'; // Your secret
 
@@ -59,11 +59,11 @@ let getSongs = track_links => {
         .then(body => {resolve(body.items)})
     }))
   }
-  return Promise.all(promises) 
+  return Promise.all(promises)
 }
 
 
-let getSongInformation = songs => {
+let getSongInformation = async songs => {
   promises = []
   for(let i = 0; i < songs.length ; i++){
     for(let k = 0; k < songs[i].length ; k++){
@@ -80,18 +80,18 @@ let getSongInformation = songs => {
       )
     }
   }
-  return Promise.all(promises) 
+  return await Promise.all(promises) 
 }
 
-let getSongFeatures = songInfoList => {
-  promises = []
-  // console.log(songInfoList[0])
-  url = "https://api.spotify.com/v1/audio-features?ids=52AWJPKuELTY9TjwHzXuhl" //+ songInfoList[0].id
-  console.log(url)
-  return accessSpotifyAPI(url).then(body => {
-    console.log(body)
-    return body
-  })
+// let getSongFeatures = songInfoList => {
+//   promises = []
+//   // console.log(songInfoList[0])
+//   url = "https://api.spotify.com/v1/audio-features?ids=52AWJPKuELTY9TjwHzXuhl" //+ songInfoList[0].id
+//   console.log(url)
+//   return accessSpotifyAPI(url).then(body => {
+//     console.log(body)
+//     return body
+//   })
   // for(let i = 0; i < songInfoList.length ; i = i + 100){
   //   promises.push(
   //     new Promise(resolve => {
@@ -110,7 +110,7 @@ let getSongFeatures = songInfoList => {
   //   )
   // }
   // return Promise.all(promises) 
-}
+// }
 
 let getLinks = body => {
   return new Promise((resolve, reject) => {
@@ -138,6 +138,25 @@ let getLinks = body => {
     resolve(track_links)
   })
 }
+
+let test = async songInfoList =>  {
+  promises = []
+  for (let i = 0; i < songInfoList.length ; i = i + 100){
+    promises.push(
+      new Promise(resolve => {
+        url = "https://api.spotify.com/v1/audio-features?ids=" + songInfoList[i].id
+
+        // Create url with 100 IDs
+        for(let k = i + 1; k < i + 100 && k < songInfoList.length; k++) {
+          url = url + "%2C" + songInfoList[k].id
+        }
+        accessSpotifyAPI(url)
+        .then(body => {resolve(body)})
+      })
+    )
+  }
+  return await Promise.all(promises) 
+}
   
   
 //Request authorization from Spotify
@@ -158,39 +177,73 @@ rp(authOptions)
   return getSongInformation(songs)
 })
 .then(songInfoList => {
+  console.log(songInfoList.length)
+  songsWithFeatures = songInfoList;
   promises = []
   //Fetch 100 track features with one call
-  for(let i = 0; i < songInfoList.length ; i = i + 100){
-    promises.push(
-      new Promise(resolve => {
-        url = "https://api.spotify.com/v1/audio-features?ids=" + songInfoList[i].id
 
-        // Create url with 100 IDs
-        for(let k = i + 1; k < i + 100 && k < songInfoList.length; k++) {
-          url = url + "%2C" + songInfoList[k].id
-        }
-        accessSpotifyAPI(url)
-        .then(body => {resolve(body)})
-      })
-    )
-  }
-  return Promise.all(promises) 
+  // async function printFiles () {
+  //   const files = await getFilePaths()
+  
+  //   for await (const file of fs.readFile(file, 'utf8')) {
+  //     console.log(contents)
+  //   }
+  // }
+
+  // async function printFiles () {
+  //   const files = await getFilePaths();
+  
+  //   await Promise.all(files.map(async (file) => {
+  //     const contents = await fs.readFile(file, 'utf8')
+  //     console.log(contents)
+  //   }));
+  // }
+
+  // for (let i = 0; i < songInfoList.length ; i = i + 100){
+  //   promises.push(
+  //     new Promise(resolve => {
+  //       url = "https://api.spotify.com/v1/audio-features?ids=" + songInfoList[i].id
+
+  //       // Create url with 100 IDs
+  //       for(let k = i + 1; k < i + 100 && k < songInfoList.length; k++) {
+  //         url = url + "%2C" + songInfoList[k].id
+  //       }
+  //       accessSpotifyAPI(url)
+  //       .then(body => {resolve(body)})
+  //     })
+  //   )
+  // }
+  // return await Promise.all(promises) 
+  return test(songInfoList)
 })
 .then(songFeaturesList => {
 
+
   featuresArray = []
+  // console.log(songFeaturesList[3]["audio_features"][5].danceability)
+  // console.log(songFeaturesList[9]["audio_features"][65].danceability)
+  // console.log(songFeaturesList[17]["audio_features"][5].danceability)
+  // console.log(songFeaturesList[6]["audio_features"][82].danceability)
+  // console.log(songFeaturesList[1]["audio_features"][5].danceability)
+  // console.log(songFeaturesList[0]["audio_features"][0].danceability)
   
   //Extract every features object 
   // console.log(songFeaturesList[8])
+  nbIter = 0
+  toDrop = []
   for (let i = 0; i < songFeaturesList.length; i++) {
     if(songFeaturesList[i] != null){
       Object.keys(songFeaturesList[i]).forEach(key => {
         // console.log(songFeaturesList[i][key].length)
-        for(let k = 0; k < 30 /*songFeaturesList[i][key].length */; k++) {
+
+        for(let k = 0; k < songFeaturesList[i][key].length; k++) {
+          nbIter++
           //Delete unnecessary features
-          if(songFeaturesList[i][key][k] == null) { break}
+          if(songFeaturesList[i][key][k] == null) {
+            toDrop.push(nbIter)
+            continue
+          }
           // console.log(songFeaturesList[7][key][40])
-          console.log(i,k)
           delete songFeaturesList[i][key][k].type
           delete songFeaturesList[i][key][k].id
           delete songFeaturesList[i][key][k].uri
@@ -201,8 +254,24 @@ rp(authOptions)
       }) //end for each
     }
   } //end for
+
+  //Drop entries where features were not retrieved
+  for(index in toDrop){
+    songsWithFeatures.splice(index, 1) 
+  }
+
+  //Merge two name and features
+  for(let i = 0; i < songsWithFeatures.length; i++){
+    if(featuresArray[i] == null) {continue}
+    featuresArray[i]["name"] = songsWithFeatures[i]["name"]
+    featuresArray[i]["artist"] = songsWithFeatures[i]["artist"]
+    featuresArray[i]["popularity"] = songsWithFeatures[i]["popularity"]
+  }
+
+  console.log(songsWithFeatures.length, featuresArray.length)
+
   var json = JSON.stringify(featuresArray);
-  fs.writeFile('myjsonfile.json', json, 'utf8', () => console.log("Done"));
+  fs.writeFile('trainingsample.json', json, 'utf8', () => console.log("Done"));
 
   return featuresArray
   
@@ -212,6 +281,7 @@ rp(authOptions)
   "loudness","mode","speechiness",
   "acousticness","instrumentalness","liveness",
   "valence","tempo","duration_ms","time_signature"]
+
   json2csv.parse({data: featuresArray[0], fields:myFields}, function(err, csv) {
     if (err) console.log(err);
     fs.writeFile('test.csv', csv, function(err) {
