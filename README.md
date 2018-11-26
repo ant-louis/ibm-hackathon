@@ -2,7 +2,7 @@
 
 On 23 and 24 November 2018, a coding hackathon was organized in the headquarter of IBM Brussels. Each team has to solve a real life problem of an IBM client by making use of IBM Cloud services. IT-professors of Belgian universities and university colleges were invited to send teams of 4 students with programming experience. The objective was to get teams of different university colleges and different faculties departments of universities.
 
-![](Slides/1_watson.png)
+![](Slides/0_watson.png)
 
 
 ## The SABAM case - What’s the next big thing?
@@ -18,7 +18,7 @@ Every day, the account manager of SABAM looks for new talents to affiliate in Be
 
 So concretely, what does SABAM wants ? It wants to detect new potential talents before anyone else does.
 
-![](Slides/3_problem.png)
+![](Slides/2_problem.png)
 
 
 ## Our solution
@@ -29,7 +29,7 @@ For a question of time in this hackathon, we decided to focus on Spotify. Why Sp
 
 How do we define the popularity of a song ? Well, the Spotify Web API also provides a "popularity" feature for all its songs, giving a value between 0 and 100 (100 being the maximal level of popularity of a song). This feature is a function of the number of clicks on the song in Spotify, but it also decreases over time such that a buzz from two years ago has a lower popularity value than a buzz from last week.
 
-![](Slides/5_solution(1).png)
+![](Slides/4_solution(1).png)
 
 
 ### First step - Collecting data
@@ -38,7 +38,7 @@ In order for our machine learning algorithm to train at best, we want a lot of t
 
 Getting at once a huge amount of songs with the Spotify API wasn't as easy as expected. Actually, the only way to get several tracks is by specifying track, artists, albums or playlists names. In order to have the largest set of all-genres tracks, we decided to take the official playlists made by Spotify, going from Classic to Rock, and we extract all the songs from these playlists. Finally, our data was composed of the features of approximately 2000 songs.
 
-![](Slides/6_collect.png)
+![](Slides/5_collect.png)
 
 
 ### Second step - Training data
@@ -47,7 +47,7 @@ The aim of this Hackathon was to use at best the given tools of the IBM Cloud. S
 
 We train our data on multiple machine learning algorithms and kept the one that gave us the least mean absolute error (MAE). The Random Forest algorithm gave pretty good results with a MAE of approximately 5 (out of 100).
 
-![](Slides/7_train.png)
+![](Slides/6_train.png)
 
 
 ### Third step - Predicting buzz
@@ -57,11 +57,11 @@ In the output list of potential hits, a filtering must be done through the artis
 
 Notice that a last filtering is necessary from SABAM in order to get rid of the artists that have already been affiliated.
 
-![](Slides/8_predict.png)
+![](Slides/7_predict.png)
 
 
 ## Final Application
 
 Finally, our solution to the SABAM problem is a web application with an user-friendly interface, where the account manager only has to select the different platforms on which he wants to serach new talents - only Spotify is effective for the moment - and then clicks the search button. After less than a minute, a complete list of potential artists appears on his screen.
 
-![](Slides/9_app.png)
+![](Slides/8_app.png)
