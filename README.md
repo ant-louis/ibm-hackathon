@@ -1,6 +1,6 @@
 # IBM Hackathon 2018
 
-On 23 and 24 November 2018, a coding hackathon was organized in the headquarter of IBM Brussels. Each team has to solve a real life problem of an IBM client by making use of IBM Cloud services. IT-professors of Belgian universities and university colleges were invited to send teams of 4 students with programming experience. The objective was to get teams of different university colleges and different faculties departments of universities.
+On 23 and 24 November 2018, a coding hackathon was organized in the headquarter of IBM Brussels. Each team has to solve a real life problem of an IBM client by making use of IBM Cloud services. IT-professors of Belgian universities and university colleges were invited to send teams of four students with programming experience. The objective was to get teams of different university colleges and different faculties departments of universities.
 
 ![](Slides/0_watson.png)
 
@@ -9,7 +9,7 @@ On 23 and 24 November 2018, a coding hackathon was organized in the headquarter 
 
 Sabam is always on the lookout for emerging talent. Emerging bands are not always aware of their rights and the money they can rightfully earn for public performances. As part of Sabam’s mission we want to reach out to these bands and inform them about authors rights, their rights, the in- and outs of publishing deals and the general “what’s in it for you”. Authors that are still under radar of the mainstream press but are about to boom are our main target.
 
-Our mission is to predict what Belgian, French or Dutch musical authors/bands are booming under the radar, what’s the chatter about, where the buzz is.
+Our mission is to predict what Belgian, French or Dutch musical authors/bands are booming under the radar, what the chatter is about, where the buzz is.
 
 
 ## The problem
