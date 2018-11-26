@@ -23,7 +23,7 @@ So concretely, what does SABAM wants ? It wants to detect new potential talents 
 
 ## Our solution
 
-Our solution consists in using some machine learning algorithms that would use the exact same plateforms that the SABAM employee daily uses, and through these platforms, look for some signs about new songs that could possibly be a buzz. Given a new release, if we can predict that it's gonna be a hit, then the emerging artist is probably a new talent that SABAM wants to affiliate.
+Our solution consists in using some machine learning algorithms that would use the exact same platforms that the SABAM employee daily uses, and through these platforms, look for some signs about new songs that could possibly be a buzz. Given a new release, if we can predict that it's gonna be a hit, then the emerging artist is probably a new talent that SABAM wants to affiliate.
 
 For a question of time during this hackathon, we decided to focus on Spotify. Why Spotify ? Because it has a great Web API that allows us to get extremely precise data about a song such as its tempo, its energy, its accousticness or its danceability. Concretely, our idea with Spotify is to analyze these features for a huge amount of songs of all genres and find a correlation between the characteristics of a song and its popularity.
 
