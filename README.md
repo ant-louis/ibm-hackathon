@@ -7,9 +7,9 @@ On 23 and 24 November 2018, a coding hackathon was organized in the headquarter 
 
 ## The SABAM case - What’s the next big thing?
 
-Sabam is always on the lookout for emerging talent. Emerging bands are not always aware of their rights and the money they can rightfully earn for public performances. As part of Sabam’s mission we want to reach out to these bands and inform them about authorsrights, their rights, the in- and outs of publishing deals and the general “what’s in it for you”. Authors that are still under radar of the mainstream press but are about to boom are our main target.
+Sabam is always on the lookout for emerging talent. Emerging bands are not always aware of their rights and the money they can rightfully earn for public performances. As part of Sabam’s mission we want to reach out to these bands and inform them about authors rights, their rights, the in- and outs of publishing deals and the general “what’s in it for you”. Authors that are still under radar of the mainstream press but are about to boom are our main target.
 
-Our mission : What Belgian, French or Dutch musical authors/bands are booming under the radar? What’s the chatter about, where’s the buzz? What’s the next big thing?
+Our mission is to predict what Belgian, French or Dutch musical authors/bands are booming under the radar, what’s the chatter about, where the buzz is.
 
 
 ## The problem
