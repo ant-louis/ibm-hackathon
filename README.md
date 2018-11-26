@@ -1,4 +1,4 @@
-# IBM-Hackathon
+# IBM Hackathon 2018
 
 On 23 and 24 November 2018, a coding hackathon was organized in the headquarter of IBM Brussels. Each team has to solve a real life problem of an IBM client by making use of IBM Cloud services. IT-professors of Belgian universities and university colleges were invited to send teams of 4 students with programming experience. The objective was to get teams of different university colleges and different faculties departments of universities.
 
@@ -23,9 +23,9 @@ So concretely, what does SABAM wants ? It wants to detect new potential talents 
 
 ## Our solution
 
-Our solution consists in using some machine learning algorithms that would use the exact same plateforms that the SABAM employee uses daily, and through these platforms, look for some signs about new songs that could possibly be a buzz. Given a new release, if we can predict that it's gonna be a hit, then the emerging artist is probably a new talent that SABAM wants to affiliate.
+Our solution consists in using some machine learning algorithms that would use the exact same plateforms that the SABAM employee daily uses, and through these platforms, look for some signs about new songs that could possibly be a buzz. Given a new release, if we can predict that it's gonna be a hit, then the emerging artist is probably a new talent that SABAM wants to affiliate.
 
-For a question of time in this hackathon, we decided to focus on Spotify. Why Spotify ? Because it has a great Web API that allows us to get extremely precise data about a song such as its tempo, its energy, its accousticness or its danceability. Concretely, our idea with Spotify is to analyze these features for a huge amount of songs of all genres and find a correlation between the characteristics of a song and its popularity.
+For a question of time during this hackathon, we decided to focus on Spotify. Why Spotify ? Because it has a great Web API that allows us to get extremely precise data about a song such as its tempo, its energy, its accousticness or its danceability. Concretely, our idea with Spotify is to analyze these features for a huge amount of songs of all genres and find a correlation between the characteristics of a song and its popularity.
 
 How do we define the popularity of a song ? Well, the Spotify Web API also provides a "popularity" feature for all its songs, giving a value between 0 and 100 (100 being the maximal level of popularity of a song). This feature is a function of the number of clicks on the song in Spotify, but it also decreases over time such that a buzz from two years ago has a lower popularity value than a buzz from last week.
 
