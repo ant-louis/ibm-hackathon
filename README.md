@@ -1,6 +1,7 @@
 # IBM-Hackathon
 
-On 23 and 24 November 2018, a coding hackathon was organized in the headquarter of IBM Brussels. Each team has to solve a real life problem of an IBM client by making use of IBM Cloud services. IT-professors of Belgian universities and university colleges were invited to send teams of 4 students with programming experience. The objective wass to get teams of different university colleges and different faculties departments of universities.
+On 23 and 24 November 2018, a coding hackathon was organized in the headquarter of IBM Brussels. Each team has to solve a real life problem of an IBM client by making use of IBM Cloud services. IT-professors of Belgian universities and university colleges were invited to send teams of 4 students with programming experience. The objective was to get teams of different university colleges and different faculties departments of universities.
+
 
 ## The SABAM case - What’s the next big thing?
 
@@ -15,6 +16,7 @@ Every day, the account manager of SABAM looks for new talents to affiliate in Be
 
 So concretely, what does SABAM wants ? It wants to detect new potential talents before anyone else does.
 
+
 ## Our solution
 
 Our solution consists in using some machine learning algorithms that would use the exact same plateforms that the SABAM employee uses daily, and through these platforms, look for some signs about new songs that could possibly be a buzz. Given a new release, if we can predict that it's gonna be a hit, then the emerging artist is probably a new talent that SABAM wants to affiliate.
@@ -26,9 +28,19 @@ How do we define the popularity of a song ? Well, the Spotify Web API also provi
 
 ### First step - Collecting data
 
-In order for our machine learning algorithm to train at best, we want a lot of tracks of all possible genres. Does the language matter ? Even if SABAM only looks for new talents from Benelux and France, where the majority of the songs are written in French, having non French songs
+In order for our machine learning algorithm to train at best, we want a lot of tracks of all possible genres. Does the language matter ? Well, even if SABAM only looks for new talents from Benelux and France, where the majority of the songs are written in French and Ducth, having other languages will not false our model. Indeed, if you like a Spanish song, it's probably because of the beat and so, if a comparable beat appears in a French song, the chances are that you will also probably like it. Then, does the year of release matter ? Of course it does ! SABAM wants to know what is going to buzz now, depending on the current hype. The problem is that the Spotify API doesn't allow you to select all the songs from a specific year. But given that the popularity feature decreases over time, it's not a problem if we consider older songs in our dataset because even if they have been a hit in the past, their popularity value will be lower than the one of a comparable actual hit.
+
+Getting at once a huge amount of songs with the Spotify API wasn't as easy as expected. Actually, the only way to get several tracks is by specifying track, artists, albums or playlists names. In order to have the largest set of all-genres tracks, we decided to take the official playlists made by Spotify, going from Classic to Rock, and we extract all the songs from these playlists. Finally, our data is composed of the features of all these collected songs.
+
+
+### Second step - Training data
+
+The aim of this Hackathon was to use at best the given tools of the IBM Cloud. So, we used the IBM Watson Studio that provides tools for data scientists to collaboratively and easily work with data to build and train models at scale. It gave us the possibility to quickly visualize and discover insights from our data.
 
 
 
+### Third step - Predicting buzz
 
 
+
+## Final Application
